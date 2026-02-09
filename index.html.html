@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana Pro - Game Edition</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --gold: #ffd700;
+            --glow: #fff5b8;
+            --space: #050a1f;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* === SPACE BACKGROUND === */
+        #space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .meteor {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: linear-gradient(90deg, white, transparent);
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            animation: meteor-fall 2s linear infinite;
+        }
+
+        @keyframes meteor-fall {
+            0% {
+                transform: translateX(0) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(300px) translateY(300px);
+                opacity: 0;
+            }
+        }
+
+        /* === INTRO SCREEN === */
+        #intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1.5s ease-out;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: logoFloat 2s ease-in-out;
+        }
+
+        @keyframes logoFloat {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .intro-text {
+            font-size: 2rem;
+            letter-spacing: 8px;
+            color: var(--gold);
+            opacity: 0;
+            animation: fadeIn 1s 0.5s forwards;
+        }
+
+        .engineer-text {
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: white;
+            opacity: 0;
+            margin-top: 20px;
+            animation: fadeIn 1s 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* === MAIN APP === */
+        #main-app {
+            display: none;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .logo-small {
+            font-size: 1.5rem;
+        }
+
+        .settings-btn {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .settings-btn:hover {
+            background: var(--gold);
+            color: black;
+            transform: rotate(90deg);
+        }
+
+        /* Main Clock Display */
+        .clock-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #main-clock {
+            font-size: 4rem;
+            font-weight: 200;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--glow);
+            margin-bottom: 10px;
+        }
+
+        #date-display {
+            font-size: 1rem;
+            opacity: 0.7;
+            letter-spacing: 2px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            margin: 0 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: var(--gold);
+            color: black;
+            transform: translateY(-5px);
+        }
+
+        .nav-btn.active {
+            background: var(--gold);
+            color: black;
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        /* === GAME OVERLAYS === */
+        .game-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 2500;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Flappy Bird Game */
+        #flappy-game-canvas {
+            border: 3px solid var(--gold);
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .game-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--glow);
+        }
+
+        .game-instruction {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .game-score {
+            font-size: 1.5rem;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .fail-warning {
+            font-size: 1rem;
+            color: #ff4d4d;
+            margin-top: 5px;
+            animation: pulse-warning 1s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Color Challenge Game */
+        #color-game {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .eye-indicator {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            transition: all 0.3s;
+            z-index: 11;
+        }
+
+        .eye-indicator.glowing {
+            animation: eye-glow 0.5s infinite;
+            filter: drop-shadow(0 0 20px var(--gold));
+        }
+
+        @keyframes eye-glow {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
+        }
+
+        .color-task {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .task-instruction {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .color-words {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .color-word {
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+            user-select: none;
+        }
+
+        .color-word:hover {
+            transform: scale(1.05);
+            border-color: white;
+        }
+
+        .color-word.correct-flash {
+            animation: correct-flash 0.3s;
+        }
+
+        .color-word.wrong-flash {
+            animation: wrong-flash 0.3s;
+        }
+
+        @keyframes correct-flash {
+            0%, 100% { background-color: inherit; }
+            50% { background-color: #2ecc71; }
+        }
+
+        @keyframes wrong-flash {
+            0%, 100% { background-color: inherit; }
+            50% { background-color: #e74c3c; }
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+            transition: width 0.1s linear;
+        }
+
+        .sequence-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .sequence-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: 0.2s;
+        }
+
+        .sequence-dot.completed {
+            background: var(--gold);
+            transform: scale(1.3);
+        }
+
+        /* Volume Indicator */
+        .volume-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+            z-index: 12;
+        }
+
+        .volume-text {
+            font-size: 1.2rem;
+            color: var(--gold);
+        }
+
+        .volume-bars {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .volume-bar {
+            width: 20px;
+            height: 40px;
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        .volume-bar.active {
+            background: var(--gold);
+            animation: volume-pulse 0.5s infinite;
+        }
+
+        @keyframes volume-pulse {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.2); }
+        }
+
+        /* Game Over / Success */
+        .game-result {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid var(--gold);
+            text-align: center;
+            display: none;
+            z-index: 13;
+        }
+
+        .result-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .continue-btn {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .continue-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            #main-clock {
+                font-size: 3rem;
+            }
+            #flappy-game-canvas {
+                width: 90% !important;
+                height: auto !important;
+            }
+            .color-words {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Space Background -->
+    <div id="space-bg">
+        <div class="stars" id="stars"></div>
+    </div>
+
+    <!-- Intro Screen -->
+    <div id="intro">
+        <div class="logo">🍌</div>
+        <div class="intro-text">NANO BANANA</div>
+        <div class="engineer-text">GAME EDITION - PROMETHEUS</div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="logo-small">🍌</div>
+            <button class="settings-btn" onclick="alert('Settings disabled during alarm games')">⚙️</button>
+        </div>
+
+        <!-- Main Clock -->
+        <div class="clock-container">
+            <div id="main-clock">00:00:00</div>
+            <div id="date-display">Loading...</div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="alert('Set an alarm to test the games!')">
+                <div class="nav-icon">⏰</div>
+                <div>Test Alarm</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Flappy Bird Game Overlay -->
+    <div id="flappy-overlay" class="game-overlay">
+        <div class="game-header">
+            <div class="game-title">🍌 WAKE UP CHALLENGE: FLAPPY BANANA</div>
+            <div class="game-instruction">Click/Tap to flap! Pass 4 pillars to stop the alarm!</div>
+            <div class="game-score">Score: <span id="flappy-score">0</span> / 4</div>
+            <div class="fail-warning" id="fail-warning">Losses: <span id="loss-count">0</span> - Volume increasing!</div>
+        </div>
+        <canvas id="flappy-game-canvas" width="400" height="600"></canvas>
+        <div class="volume-indicator">
+            <div class="volume-text">Alarm Volume</div>
+            <div class="volume-bars">
+                <div class="volume-bar" id="vol1"></div>
+                <div class="volume-bar" id="vol2"></div>
+                <div class="volume-bar" id="vol3"></div>
+                <div class="volume-bar" id="vol4"></div>
+                <div class="volume-bar" id="vol5"></div>
+            </div>
+        </div>
+        <div class="game-result" id="flappy-result">
+            <div class="result-title">🎉 YOU WIN!</div>
+            <div class="result-message">Congratulations! You passed 4 pillars!</div>
+            <button class="continue-btn" onclick="stopAlarmCompletely()">STOP ALARM</button>
+        </div>
+    </div>
+
+    <!-- Color Challenge Game Overlay -->
+    <div id="color-overlay" class="game-overlay">
+        <div class="eye-indicator" id="eye-indicator">👁️</div>
+        <div class="game-header">
+            <div class="game-title">🎨 WAKE UP CHALLENGE: COLOR CONFUSION</div>
+            <div class="game-instruction" id="color-instruction">Click colors in order!</div>
+            <div class="game-score">Round: <span id="color-round">1</span> / 5</div>
+            <div class="fail-warning">Losses: <span id="color-loss-count">0</span> - Volume increasing!</div>
+        </div>
+        <div id="color-game">
+            <div class="color-task">
+                <div class="task-instruction" id="task-text"></div>
+                <div class="sequence-display" id="sequence-display"></div>
+                <div class="color-words" id="color-words"></div>
+                <div class="timer-bar">
+                    <div class="timer-fill" id="timer-fill"></div>
+                </div>
+            </div>
+        </div>
+        <div class="volume-indicator">
+            <div class="volume-text">Alarm Volume</div>
+            <div class="volume-bars">
+                <div class="volume-bar" id="color-vol1"></div>
+                <div class="volume-bar" id="color-vol2"></div>
+                <div class="volume-bar" id="color-vol3"></div>
+                <div class="volume-bar" id="color-vol4"></div>
+                <div class="volume-bar" id="color-vol5"></div>
+            </div>
+        </div>
+        <div class="game-result" id="color-result">
+            <div class="result-title">🎉 YOU WIN!</div>
+            <div class="result-message">Congratulations! You completed 5 rounds!</div>
+            <button class="continue-btn" onclick="stopAlarmCompletely()">STOP ALARM</button>
+        </div>
+    </div>
+
+    <audio id="alarmAudio" loop></audio>
+
+    <script>
+        // === GLOBAL STATE ===
+        let alarmTimeout;
+        let gameStartTimeout;
+        let currentVolume = 0.3;
+        let lossCount = 0;
+        let alarmAudio = document.getElementById('alarmAudio');
+        alarmAudio.src = 'https://actions.google.com/sounds/v1/alarms/beep_loop.ogg';
+        alarmAudio.volume = currentVolume;
+
+        // === SPACE BACKGROUND ===
+        function initSpace() {
+            const stars = document.getElementById('stars');
+            
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                stars.appendChild(star);
+            }
+
+            setInterval(() => {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.top = Math.random() * 50 + '%';
+                meteor.style.width = Math.random() * 100 + 50 + 'px';
+                stars.appendChild(meteor);
+                setTimeout(() => meteor.remove(), 2000);
+            }, 3000);
+        }
+
+        // === INTRO ===
+        setTimeout(() => {
+            document.getElementById('intro').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('intro').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+            }, 1500);
+        }, 3000);
+
+        // === CLOCK ===
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+            });
+            const dateStr = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            document.getElementById('main-clock').textContent = timeStr;
+            document.getElementById('date-display').textContent = dateStr;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        initSpace();
+
+        // === ALARM TRIGGER (AUTO-START FOR DEMO) ===
+        setTimeout(() => {
+            triggerAlarm();
+        }, 5000); // Start alarm after 5 seconds for demo
+
+        function triggerAlarm() {
+            // Play alarm sound
+            alarmAudio.play().catch(e => console.log('Audio play failed:', e));
+            
+            // Vibrate
+            if ('vibrate' in navigator) {
+                navigator.vibrate([500, 200, 500, 200, 500]);
+                setInterval(() => {
+                    if (document.getElementById('flappy-overlay').style.display === 'flex' ||
+                        document.getElementById('color-overlay').style.display === 'flex') {
+                        navigator.vibrate([500, 200, 500]);
+                    }
+                }, 2000);
+            }
+
+            // Start 10-second countdown to game
+            gameStartTimeout = setTimeout(() => {
+                startRandomGame();
+            }, 10000); // 10 seconds
+        }
+
+        function startRandomGame() {
+            const games = ['flappy', 'color'];
+            const randomGame = games[Math.floor(Math.random() * games.length)];
+            
+            if (randomGame === 'flappy') {
+                startFlappyGame();
+            } else {
+                startColorGame();
+            }
+        }
+
+        function increaseVolume() {
+            lossCount++;
+            currentVolume = Math.min(1.0, 0.3 + (lossCount * 0.15));
+            alarmAudio.volume = currentVolume;
+            updateVolumeDisplay();
+        }
+
+        function updateVolumeDisplay() {
+            const bars = 5;
+            const activeBars = Math.ceil((currentVolume / 1.0) * bars);
+            
+            // Update Flappy game volume bars
+            for (let i = 1; i <= bars; i++) {
+                const bar = document.getElementById(`vol${i}`);
+                if (bar) {
+                    if (i <= activeBars) {
+                        bar.classList.add('active');
+                    } else {
+                        bar.classList.remove('active');
+                    }
+                }
+            }
+            
+            // Update Color game volume bars
+            for (let i = 1; i <= bars; i++) {
+                const bar = document.getElementById(`color-vol${i}`);
+                if (bar) {
+                    if (i <= activeBars) {
+                        bar.classList.add('active');
+                    } else {
+                        bar.classList.remove('active');
+                    }
+                }
+            }
+        }
+
+        // === FLAPPY BIRD GAME ===
+        let flappyGame = {
+            canvas: null,
+            ctx: null,
+            bird: { x: 80, y: 250, velocity: 0, radius: 20 },
+            pipes: [],
+            score: 0,
+            gameOver: false,
+            started: false,
+            gravity: 0.5,
+            jumpForce: -10,
+            pipeGap: 180,
+            pipeSpeed: 3
+        };
+
+        function startFlappyGame() {
+            document.getElementById('flappy-overlay').style.display = 'flex';
+            document.getElementById('loss-count').textContent = lossCount;
+            
+            flappyGame.canvas = document.getElementById('flappy-game-canvas');
+            flappyGame.ctx = flappyGame.canvas.getContext('2d');
+            flappyGame.score = 0;
+            flappyGame.gameOver = false;
+            flappyGame.started = true;
+            flappyGame.bird = { x: 80, y: 250, velocity: 0, radius: 20 };
+            flappyGame.pipes = [];
+            
+            document.getElementById('flappy-score').textContent = '0';
+            document.getElementById('flappy-result').style.display = 'none';
+            
+            // Add initial pipes
+            for (let i = 0; i < 3; i++) {
+                flappyGame.pipes.push({
+                    x: 400 + i * 250,
+                    topHeight: Math.random() * 200 + 100,
+                    scored: false
+                });
+            }
+            
+            // Control
+            flappyGame.canvas.onclick = () => {
+                if (!flappyGame.gameOver) {
+                    flappyGame.bird.velocity = flappyGame.jumpForce;
+                }
+            };
+            
+            updateVolumeDisplay();
+            flappyGameLoop();
+        }
+
+        function flappyGameLoop() {
+            if (!flappyGame.started) return;
+            
+            const ctx = flappyGame.ctx;
+            const canvas = flappyGame.canvas;
+            
+            // Clear canvas
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (!flappyGame.gameOver) {
+                // Update bird
+                flappyGame.bird.velocity += flappyGame.gravity;
+                flappyGame.bird.y += flappyGame.bird.velocity;
+                
+                // Update pipes
+                flappyGame.pipes.forEach(pipe => {
+                    pipe.x -= flappyGame.pipeSpeed;
+                    
+                    // Score
+                    if (!pipe.scored && pipe.x + 60 < flappyGame.bird.x) {
+                        pipe.scored = true;
+                        flappyGame.score++;
+                        document.getElementById('flappy-score').textContent = flappyGame.score;
+                        
+                        // Win condition
+                        if (flappyGame.score >= 4) {
+                            flappyWin();
+                            return;
+                        }
+                    }
+                });
+                
+                // Add new pipes
+                if (flappyGame.pipes[flappyGame.pipes.length - 1].x < canvas.width - 200) {
+                    flappyGame.pipes.push({
+                        x: canvas.width,
+                        topHeight: Math.random() * 200 + 100,
+                        scored: false
+                    });
+                }
+                
+                // Remove off-screen pipes
+                flappyGame.pipes = flappyGame.pipes.filter(pipe => pipe.x > -60);
+                
+                // Collision detection
+                if (flappyGame.bird.y - flappyGame.bird.radius < 0 || 
+                    flappyGame.bird.y + flappyGame.bird.radius > canvas.height) {
+                    flappyGameOver();
+                }
+                
+                flappyGame.pipes.forEach(pipe => {
+                    if (flappyGame.bird.x + flappyGame.bird.radius > pipe.x && 
+                        flappyGame.bird.x - flappyGame.bird.radius < pipe.x + 60) {
+                        if (flappyGame.bird.y - flappyGame.bird.radius < pipe.topHeight || 
+                            flappyGame.bird.y + flappyGame.bird.radius > pipe.topHeight + flappyGame.pipeGap) {
+                            flappyGameOver();
+                        }
+                    }
+                });
+            }
+            
+            // Draw pipes
+            ctx.fillStyle = '#2ecc71';
+            flappyGame.pipes.forEach(pipe => {
+                ctx.fillRect(pipe.x, 0, 60, pipe.topHeight);
+                ctx.fillRect(pipe.x, pipe.topHeight + flappyGame.pipeGap, 60, canvas.height);
+            });
+            
+            // Draw bird (banana)
+            ctx.font = '40px Arial';
+            ctx.fillText('🍌', flappyGame.bird.x - 20, flappyGame.bird.y + 15);
+            
+            if (flappyGame.started && !flappyGame.gameOver) {
+                requestAnimationFrame(flappyGameLoop);
+            }
+        }
+
+        function flappyGameOver() {
+            flappyGame.gameOver = true;
+            flappyGame.started = false;
+            increaseVolume();
+            
+            setTimeout(() => {
+                startFlappyGame(); // Restart
+            }, 1000);
+        }
+
+        function flappyWin() {
+            flappyGame.gameOver = true;
+            flappyGame.started = false;
+            document.getElementById('flappy-result').style.display = 'block';
+        }
+
+        // === COLOR CHALLENGE GAME ===
+        let colorGame = {
+            colors: [
+                { name: 'RED', hex: '#e74c3c' },
+                { name: 'GREEN', hex: '#2ecc71' },
+                { name: 'BLUE', hex: '#3498db' },
+                { name: 'YELLOW', hex: '#f1c40f' },
+                { name: 'PURPLE', hex: '#9b59b6' },
+                { name: 'ORANGE', hex: '#e67e22' }
+            ],
+            currentSequence: [],
+            userSequence: [],
+            eyeMode: false, // false = click word, true = click color
+            round: 1,
+            timer: null,
+            timeLeft: 5
+        };
+
+        function startColorGame() {
+            document.getElementById('color-overlay').style.display = 'flex';
+            document.getElementById('color-loss-count').textContent = lossCount;
+            
+            colorGame.round = 1;
+            document.getElementById('color-round').textContent = '1';
+            document.getElementById('color-result').style.display = 'none';
+            
+            updateVolumeDisplay();
+            startColorRound();
+        }
+
+        function startColorRound() {
+            // Shuffle colors
+            let shuffled = [...colorGame.colors].sort(() => Math.random() - 0.5);
+            
+            // Randomly decide eye mode
+            colorGame.eyeMode = Math.random() > 0.5;
+            const eye = document.getElementById('eye-indicator');
+            
+            if (colorGame.eyeMode) {
+                eye.classList.add('glowing');
+            } else {
+                eye.classList.remove('glowing');
+            }
+            
+            // Create sequence (3 colors to click)
+            colorGame.currentSequence = shuffled.slice(0, 3);
+            colorGame.userSequence = [];
+            
+            // Display instruction
+            const instruction = colorGame.eyeMode ? 
+                "👁️ EYE IS GLOWING! Click the FONT COLORS in order!" :
+                "Click the WORDS in order!";
+            document.getElementById('color-instruction').textContent = instruction;
+            
+            // Create color words (word text doesn't match color)
+            const wordsContainer = document.getElementById('color-words');
+            wordsContainer.innerHTML = '';
+            
+            shuffled.forEach(color => {
+                // Pick a random different color for the text
+                let textColor = shuffled[Math.floor(Math.random() * shuffled.length)];
+                while (textColor.name === color.name) {
+                    textColor = shuffled[Math.floor(Math.random() * shuffled.length)];
+                }
+                
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'color-word';
+                wordDiv.textContent = textColor.name;
+                wordDiv.style.color = color.hex;
+                wordDiv.style.background = 'rgba(255, 255, 255, 0.1)';
+                wordDiv.dataset.wordName = textColor.name;
+                wordDiv.dataset.colorName = color.name;
+                wordDiv.onclick = () => handleColorClick(wordDiv);
+                wordsContainer.appendChild(wordDiv);
+            });
+            
+            // Create sequence display
+            const sequenceDisplay = document.getElementById('sequence-display');
+            sequenceDisplay.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'sequence-dot';
+                dot.id = `seq-dot-${i}`;
+                sequenceDisplay.appendChild(dot);
+            }
+            
+            // Start timer
+            colorGame.timeLeft = 5;
+            startColorTimer();
+        }
+
+        function handleColorClick(element) {
+            const clickedValue = colorGame.eyeMode ? 
+                element.dataset.colorName : 
+                element.dataset.wordName;
+            
+            const expectedValue = colorGame.eyeMode ?
+                colorGame.currentSequence[colorGame.userSequence.length].name :
+                colorGame.currentSequence[colorGame.userSequence.length].name;
+            
+            if (clickedValue === expectedValue) {
+                // Correct!
+                element.classList.add('correct-flash');
+                setTimeout(() => element.classList.remove('correct-flash'), 300);
+                
+                colorGame.userSequence.push(clickedValue);
+                
+                // Update sequence display
+                document.getElementById(`seq-dot-${colorGame.userSequence.length - 1}`)
+                    .classList.add('completed');
+                
+                // Check if round complete
+                if (colorGame.userSequence.length === 3) {
+                    clearInterval(colorGame.timer);
+                    colorGame.round++;
+                    
+                    if (colorGame.round > 5) {
+                        colorWin();
+                    } else {
+                        document.getElementById('color-round').textContent = colorGame.round;
+                        setTimeout(startColorRound, 1000);
+                    }
+                }
+            } else {
+                // Wrong!
+                element.classList.add('wrong-flash');
+                setTimeout(() => element.classList.remove('wrong-flash'), 300);
+                colorGameOver();
+            }
+        }
+
+        function startColorTimer() {
+            const timerFill = document.getElementById('timer-fill');
+            timerFill.style.width = '100%';
+            
+            let elapsed = 0;
+            const duration = 5000; // 5 seconds
+            
+            colorGame.timer = setInterval(() => {
+                elapsed += 100;
+                const percentage = ((duration - elapsed) / duration) * 100;
+                timerFill.style.width = percentage + '%';
+                
+                if (elapsed >= duration) {
+                    clearInterval(colorGame.timer);
+                    colorGameOver();
+                }
+            }, 100);
+        }
+
+        function colorGameOver() {
+            clearInterval(colorGame.timer);
+            increaseVolume();
+            
+            setTimeout(() => {
+                colorGame.round = 1;
+                document.getElementById('color-round').textContent = '1';
+                startColorRound();
+            }, 1000);
+        }
+
+        function colorWin() {
+            clearInterval(colorGame.timer);
+            document.getElementById('color-result').style.display = 'block';
+        }
+
+        // === STOP ALARM ===
+        function stopAlarmCompletely() {
+            document.getElementById('flappy-overlay').style.display = 'none';
+            document.getElementById('color-overlay').style.display = 'none';
+            alarmAudio.pause();
+            alarmAudio.currentTime = 0;
+            
+            if ('vibrate' in navigator) {
+                navigator.vibrate(0);
+            }
+            
+            alert('🎉 Congratulations! You defeated the wake-up challenge! You\'re now fully awake!');
+            
+            // Reset
+            lossCount = 0;
+            currentVolume = 0.3;
+        }
+    </script>
+</body>
+</html>
